@@ -41,6 +41,8 @@ with open('sabre.qasm') as file:
     while line != '':
         # add to circuit
         arg_list = line.split(' ')
+        if arg_list[0] == '':
+            arg_list = arg_list[1:]
         if len(arg_list) == 3:
             # two qubits gate
             qubit1 = int(arg_list[1].split(']')[0].split('[')[1])
@@ -64,5 +66,7 @@ basic_circ = pass_manager.run(circuit)
 layout = layout_parser.property_set["layout"]
 logical2physical = []
 for logical_idx in range(num_qubits):
-    logical2physical.append(layout[logical_idx].index)
+    for physical_idx in range(20):
+        if layout[physical_idx].index == logical_idx:
+            logical2physical.append(physical_idx)
 print(logical2physical)

@@ -33,7 +33,9 @@ with open('sabre.qasm') as file:
     # omit the header
     file.readline()
     file.readline()
-    file.readline()
+    line = file.readline()
+    num_qubits = int(line.split(' ')[1].split(']')[0].split('[')[1])
+    print(num_qubits)
     # parse the rest
     line = file.readline()
     while line != '':
@@ -53,6 +55,14 @@ with open('sabre.qasm') as file:
         # read another line
         line = file.readline()
 
+# run sabre
 layout_parser = SabreLayout(coupling_map=coupling_map)
 pass_manager = PassManager(layout_parser)
 basic_circ = pass_manager.run(circuit)
+
+# print mapping
+layout = layout_parser.property_set["layout"]
+logical2physical = []
+for logical_idx in range(num_qubits):
+    logical2physical.append(layout[logical_idx].index)
+print(logical2physical)

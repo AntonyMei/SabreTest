@@ -1,5 +1,8 @@
+from qiskit import QuantumCircuit
+from qiskit.compiler import transpile
+from qiskit.transpiler import PassManager
 from qiskit.transpiler import CouplingMap
-from qiskit.transpiler.passes import BasicSwap, LookaheadSwap, StochasticSwap
+from qiskit.transpiler.passes import SabreLayout
 
 # identical to IBM Q20 Tokyo
 coupling = [
@@ -22,25 +25,34 @@ coupling = [
     [11, 17], [12, 16],
     [13, 19], [14, 18]
 ]
-
-circuit = QuantumCircuit(7)
-circuit.h(3)
-circuit.cx(0, 6)
-circuit.cx(6, 0)
-circuit.cx(0, 1)
-circuit.cx(3, 1)
-circuit.cx(3, 0)
-
 coupling_map = CouplingMap(couplinglist=coupling)
 
-bs = BasicSwap(coupling_map=coupling_map)
-pass_manager = PassManager(bs)
+# parse qasm file into a circuit
+circuit = QuantumCircuit(20)
+with open('sabre.qasm') as file:
+    # omit the header
+    file.readline()
+    file.readline()
+    file.readline()
+    # parse the rest
+    line = file.readline()
+    while line != '':
+        # add to circuit
+        arg_list = line.split(' ')
+        if len(arg_list) == 3:
+            # two qubits gate
+            qubit1 = int(arg_list[1].split(']')[0].split('[')[1])
+            qubit2 = int(arg_list[2].split(']')[0].split('[')[1])
+            circuit.cx(qubit1, qubit2)
+        elif len(arg_list) == 2:
+            # single qubit gate
+            qubit1 = int(arg_list[1].split(']')[0].split('[')[1])
+            circuit.h(qubit1)
+        else:
+            assert False
+        # read another line
+        line = file.readline()
+
+layout_parser = SabreLayout(coupling_map=coupling_map)
+pass_manager = PassManager(layout_parser)
 basic_circ = pass_manager.run(circuit)
-
-ls = LookaheadSwap(coupling_map=coupling_map)
-pass_manager = PassManager(ls)
-lookahead_circ = pass_manager.run(circuit)
-
-ss = StochasticSwap(coupling_map=coupling_map)
-pass_manager = PassManager(ss)
-stochastic_circ = pass_manager.run(circuit)

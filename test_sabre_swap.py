@@ -2,7 +2,7 @@ from qiskit import QuantumCircuit
 from qiskit.compiler import transpile
 from qiskit.transpiler import PassManager
 from qiskit.transpiler import CouplingMap
-from qiskit.transpiler.passes import SabreLayout
+from qiskit.transpiler.passes import SabreLayout, SabreSwap
 
 # identical to IBM Q20 Tokyo
 coupling = [
@@ -57,10 +57,11 @@ with open('sabre.qasm') as file:
         # read another line
         line = file.readline()
 
-# run sabre
+# run sabre layout and sabre swap
 layout_parser = SabreLayout(coupling_map=coupling_map)
-pass_manager = PassManager(layout_parser)
-basic_circ = pass_manager.run(circuit)
+sabre_swap_parser = SabreSwap(coupling_map=coupling_map, heuristic="lookahead")
+pass_manager = PassManager([layout_parser, sabre_swap_parser])
+result_circuit = pass_manager.run(circuit)
 
 # print mapping
 layout = layout_parser.property_set["layout"]
@@ -71,3 +72,17 @@ for logical_idx in range(num_qubits):
             logical2physical.append(physical_idx)
 print("Initial logical to physical mapping:")
 print(logical2physical)
+
+# print gate count
+ori_circuit_op_list = dict(circuit.count_ops())
+new_circuit_op_list = dict(result_circuit.count_ops())
+ori_gate_count = 0
+for k, v in ori_circuit_op_list:
+    ori_gate_count += v
+new_gate_count = 0
+for k, v in new_circuit_op_list:
+    new_gate_count += v
+print(f"Original circuit gate dict: {ori_circuit_op_list}")
+print(f"Original circuit gate count: {ori_gate_count}")
+print(f"New circuit gate dict: {new_circuit_op_list}")
+print(f"New circuit gate count: {new_gate_count}")

@@ -25,7 +25,10 @@ coupling = [
     [11, 17], [12, 16],
     [13, 19], [14, 18]
 ]
-coupling_map = CouplingMap(couplinglist=coupling)
+reversed_coupling = []
+for pair in coupling:
+    reversed_coupling.append([pair[1], pair[0]])
+coupling_map = CouplingMap(couplinglist=coupling + reversed_coupling)
 
 # parse qasm file into a circuit
 circuit = QuantumCircuit(20)
@@ -58,7 +61,7 @@ with open('sabre.qasm') as file:
 
 # run sabre layout and sabre swap
 layout_parser = SabreLayout(coupling_map=coupling_map)
-sabre_swap_parser = SabreSwap(coupling_map=coupling_map, heuristic="lookahead")
+sabre_swap_parser = SabreSwap(coupling_map=coupling_map, heuristic="decay")
 pass_manager = PassManager([layout_parser, sabre_swap_parser])
 result_circuit = pass_manager.run(circuit)
 

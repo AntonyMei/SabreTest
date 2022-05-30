@@ -35,7 +35,6 @@ with open('sabre.qasm') as file:
     file.readline()
     line = file.readline()
     num_qubits = int(line.split(' ')[1].split(']')[0].split('[')[1])
-    print(num_qubits)
     # parse the rest
     line = file.readline()
     while line != '':
@@ -70,18 +69,18 @@ for logical_idx in range(num_qubits):
     for physical_idx in range(20):
         if layout[physical_idx].index == logical_idx:
             logical2physical.append(physical_idx)
-print("Initial logical to physical mapping:")
-print(logical2physical)
+print(f"\nNumber of qubits: {num_qubits}")
+print(f"Initial logical to physical mapping: {logical2physical}")
 
 # print gate count
 ori_circuit_op_list = dict(circuit.count_ops())
 new_circuit_op_list = dict(result_circuit.count_ops())
 ori_gate_count = 0
-for k, v in ori_circuit_op_list:
-    ori_gate_count += v
+for key in ori_circuit_op_list:
+    ori_gate_count += ori_circuit_op_list[key]
 new_gate_count = 0
-for k, v in new_circuit_op_list:
-    new_gate_count += v
+for key in new_circuit_op_list:
+    new_gate_count += new_circuit_op_list[key]
 print(f"Original circuit gate dict: {ori_circuit_op_list}")
 print(f"Original circuit gate count: {ori_gate_count}")
 print(f"New circuit gate dict: {new_circuit_op_list}")

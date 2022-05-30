@@ -3,7 +3,9 @@ from qiskit.compiler import transpile
 from qiskit.transpiler import PassManager
 from qiskit.transpiler import CouplingMap
 from qiskit.transpiler.passes import SabreLayout, SabreSwap
-from qiskit.transpiler.preset_passmanagers import level_0_pass_manager
+from qiskit.transpiler.preset_passmanagers import level_0_pass_manager, level_1_pass_manager,\
+    level_2_pass_manager, level_3_pass_manager
+from qiskit.transpiler.passmanager_config import PassManagerConfig
 
 # identical to IBM Q20 Tokyo
 coupling = [
@@ -61,35 +63,70 @@ with open('sabre.qasm') as file:
         line = file.readline()
 
 # run sabre layout and sabre swap
-pass_manager = level_0_pass_manager(PassManagerConfig(coupling_map=coupling_map))
-result_circuit = pass_manager.run(circuit)
+level_0_manager = level_0_pass_manager(PassManagerConfig(coupling_map=coupling_map, layout_method="sabre",
+                                                         routing_method="sabre"))
+level_1_manager = level_1_pass_manager(PassManagerConfig(coupling_map=coupling_map, layout_method="sabre",
+                                                         routing_method="sabre"))
+level_2_manager = level_2_pass_manager(PassManagerConfig(coupling_map=coupling_map, layout_method="sabre",
+                                                         routing_method="sabre"))
+level_3_manager = level_3_pass_manager(PassManagerConfig(coupling_map=coupling_map, layout_method="sabre",
+                                                         routing_method="sabre"))
+result_circuit_0 = level_0_manager.run(circuit)
+result_circuit_1 = level_1_manager.run(circuit)
+result_circuit_2 = level_2_manager.run(circuit)
+result_circuit_3 = level_3_manager.run(circuit)
 
-# print mapping
-layout = layout_parser.property_set["layout"]
-logical2physical = []
-for logical_idx in range(num_qubits):
-    for physical_idx in range(20):
-        if layout[physical_idx].index == logical_idx:
-            logical2physical.append(physical_idx)
-print(f"\nNumber of qubits: {num_qubits}")
-print(f"Initial logical to physical mapping: {logical2physical}")
-
-# print gate count
+# original gate count
 ori_circuit_op_list = dict(circuit.count_ops())
-new_circuit_op_list = dict(result_circuit.count_ops())
 ori_gate_count = 0
 for key in ori_circuit_op_list:
     if key == "swap":
         ori_gate_count += 3 * ori_circuit_op_list[key]
     else:
         ori_gate_count += ori_circuit_op_list[key]
-new_gate_count = 0
-for key in new_circuit_op_list:
-    if key == "swap":
-        new_gate_count += 3 * new_circuit_op_list[key]
-    else:
-        new_gate_count += new_circuit_op_list[key]
 print(f"Original circuit gate dict: {ori_circuit_op_list}")
 print(f"Original circuit gate count: {ori_gate_count}")
-print(f"New circuit gate dict: {new_circuit_op_list}")
-print(f"New circuit gate count: {new_gate_count}")
+
+# level 0 gate count
+level0_circuit_op_list = dict(result_circuit_0.count_ops())
+level0_gate_count = 0
+for key in level0_circuit_op_list:
+    if key == "swap":
+        level0_gate_count += 3 * level0_circuit_op_list[key]
+    else:
+        level0_gate_count += level0_circuit_op_list[key]
+print(f"Level 0 circuit gate dict: {level0_circuit_op_list}")
+print(f"Level 0 circuit gate count: {level0_gate_count}")
+
+# level 1 gate count
+level1_circuit_op_list = dict(result_circuit_1.count_ops())
+level1_gate_count = 0
+for key in level1_circuit_op_list:
+    if key == "swap":
+        level1_gate_count += 3 * level1_circuit_op_list[key]
+    else:
+        level1_gate_count += level1_circuit_op_list[key]
+print(f"Level 1 circuit gate dict: {level1_circuit_op_list}")
+print(f"Level 1 circuit gate count: {level1_gate_count}")
+
+# level 2 gate count
+level2_circuit_op_list = dict(result_circuit_2.count_ops())
+level2_gate_count = 0
+for key in level2_circuit_op_list:
+    if key == "swap":
+        level2_gate_count += 3 * level2_circuit_op_list[key]
+    else:
+        level2_gate_count += level2_circuit_op_list[key]
+print(f"Level 2 circuit gate dict: {level2_circuit_op_list}")
+print(f"Level 2 circuit gate count: {level2_gate_count}")
+
+# level 3 gate count
+level3_circuit_op_list = dict(result_circuit_3.count_ops())
+level3_gate_count = 0
+for key in level3_circuit_op_list:
+    if key == "swap":
+        level3_gate_count += 3 * level3_circuit_op_list[key]
+    else:
+        level3_gate_count += level3_circuit_op_list[key]
+print(f"Level 3 circuit gate dict: {level3_circuit_op_list}")
+print(f"Level 3 circuit gate count: {level3_gate_count}")

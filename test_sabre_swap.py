@@ -77,10 +77,16 @@ ori_circuit_op_list = dict(circuit.count_ops())
 new_circuit_op_list = dict(result_circuit.count_ops())
 ori_gate_count = 0
 for key in ori_circuit_op_list:
-    ori_gate_count += ori_circuit_op_list[key]
+    if key == "swap":
+        ori_gate_count += 3 * ori_circuit_op_list[key]
+    else:
+        ori_gate_count += ori_circuit_op_list[key]
 new_gate_count = 0
 for key in new_circuit_op_list:
-    new_gate_count += new_circuit_op_list[key]
+    if key == "swap":
+        new_gate_count += 3 * new_circuit_op_list[key]
+    else:
+        new_gate_count += new_circuit_op_list[key]
 print(f"Original circuit gate dict: {ori_circuit_op_list}")
 print(f"Original circuit gate count: {ori_gate_count}")
 print(f"New circuit gate dict: {new_circuit_op_list}")
